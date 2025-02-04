@@ -1,44 +1,37 @@
-name: OTP Bot Deployment
+name: Run bgmi Bot  # The name of the GitHub Action workflow
 
+# Trigger the workflow on 'push' to 'main' branch and on a scheduled cron job every 5 minutes
 on:
   push:
     branches:
-      - main  # Runs the workflow on push to the main branch
-  pull_request:
-    branches:
-      - main  # Runs the workflow on pull requests targeting the main branch
+      - main  # Trigger the workflow when changes are pushed to the 'main' branch
+  schedule:
+    - cron: '*/5 * * * *'  # Scheduled to run every 5 minutes (cron syntax)
 
 jobs:
-  deploy:
-    runs-on: ubuntu-latest  # Use the latest Ubuntu runner
+  run_bot:  # The job name
+    runs-on: ubuntu-latest  # Specify the operating system to run on (Ubuntu in this case)
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v2  # Checks out the code from your repository
+      # Step 1: Checkout the code from the repository
+      - name: Check out the code
+        uses: actions/checkout@v2  # Checkout the code in the repository to the GitHub runner
 
-    - name: Set up Python
-      uses: actions/setup-python@v2  # Sets up Python environment
-      with:
-        python-version: '3.9'  # Use Python 3.9 (you can change this to the version you need)
+      # Step 2: Make the 'bgmi' binary executable
+      - name: make executable binary
+        run: chmod +x bgmi  # Give execute permissions to the 'bgmi' file (which is assumed to be a binary)
 
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip  # Upgrade pip
-        pip install -r requirements.txt  # Install dependencies from requirements.txt
+      # Step 3: Set up Python environment
+      - name: Set up Python
+        uses: actions/setup-python@v3  # Use the 'setup-python' action to set up Python
+        with:
+          python-version: '3.x'  # Specify the Python version to use (Python 3.x)
 
-    - name: Verify Python Installation
-      run: |
-        python --version  # Check Python version
-        pip show flask  # Ensure Flask is installed
-        pip show python-telegram-bot  # Ensure python-telegram-bot is installed
+      # Step 4: Install the required Python packages
+      - name: Install required packages
+        run: |
+          pip install python-telegram-bot --upgrade  # Upgrade and install the 'python-telegram-bot' package
 
-    - name: Run the OTP bot
-      run: |
-        # Run the script in the background and redirect output to log
-        nohup python otp_bot.py > otp_bot.log 2>&1 &
-        sleep 10  # Wait for Flask app to start
-        # Output the last 50 lines of the log file to check for errors
-        tail -n 50 otp_bot.log
-
-        # Check if Flask app is running by curling the local server
-        curl http://localhost:5000 || (echo "Flask app is not running. Exiting." && exit 1)
+      # Step 5: Run the 'bgmi.py' Python script
+      - name: Run payment OTP.py
+        run: python3 payment OTP.py  # Execute the 'bgmi.py' Python script using Python 3
