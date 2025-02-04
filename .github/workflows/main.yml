@@ -26,10 +26,19 @@ jobs:
         python -m pip install --upgrade pip  # Upgrade pip
         pip install -r requirements.txt  # Install dependencies from requirements.txt
 
+    - name: Verify Python Installation
+      run: |
+        python --version  # Check Python version
+        pip show flask  # Ensure Flask is installed
+        pip show python-telegram-bot  # Ensure python-telegram-bot is installed
+
     - name: Run the OTP bot
       run: |
-        nohup python otp_bot.py > otp_bot.log 2>&1 &  # Run the script in the background and log output to otp_bot.log
-        sleep 10  # Wait 10 seconds for the Flask app to start
-        cat otp_bot.log  # Show the last 20 lines of the log to diagnose issues
-        curl http://localhost:5000 || (echo "Flask app is not running" && exit 1)  # Test if the Flask app is running, exit if it fails
+        # Run the script in the background and redirect output to log
+        nohup python otp_bot.py > otp_bot.log 2>&1 &
+        sleep 10  # Wait for Flask app to start
+        # Output the last 50 lines of the log file to check for errors
+        tail -n 50 otp_bot.log
 
+        # Check if Flask app is running by curling the local server
+        curl http://localhost:5000 || (echo "Flask app is not running. Exiting." && exit 1)
