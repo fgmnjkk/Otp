@@ -24,11 +24,12 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip  # Upgrade pip
-        pip install -r requirements.txt  # Install dependencies from requirements.txt (you'll need to create this file)
+        pip install -r requirements.txt  # Install dependencies from requirements.txt
 
     - name: Run the OTP bot
       run: |
-        nohup python otp_bot.py &  # Run the script in the background
-        sleep 5  # Allow a few seconds for the script to start
-        curl http://localhost:5000  # Test if the Flask app is running
-        
+        nohup python otp_bot.py > otp_bot.log 2>&1 &  # Run the script in the background and log output to otp_bot.log
+        sleep 10  # Wait 10 seconds for the Flask app to start
+        cat otp_bot.log  # Show the last 20 lines of the log to diagnose issues
+        curl http://localhost:5000 || (echo "Flask app is not running" && exit 1)  # Test if the Flask app is running, exit if it fails
+
